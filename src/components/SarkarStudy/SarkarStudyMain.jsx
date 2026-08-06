@@ -47,7 +47,27 @@ export default function SarkarStudyMain({
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'pdf' | 'quiz' | 'updates'
   const [searchQuery, setSearchQuery] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Persistent Dark Mode state saved in LocalStorage
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('amar_pathshala_dark_mode');
+      return saved !== null ? JSON.parse(saved) : false;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('amar_pathshala_dark_mode', JSON.stringify(isDarkMode));
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {}
+  }, [isDarkMode]);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPdfModal, setSelectedPdfModal] = useState(null);
   const [selectedQuizModal, setSelectedQuizModal] = useState(null);
