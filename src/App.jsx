@@ -53,11 +53,22 @@ export default function App() {
     } catch (e) {}
   }, [registeredUsers]);
 
-  // Current Logged-in User State (Default: null - Login Required)
+  // Current Logged-in User State (Auto-initialized so website content is immediately visible)
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('amar_pathshala_active_session');
-      return saved ? JSON.parse(saved) : null;
+      if (saved) return JSON.parse(saved);
+      
+      const defaultUser = {
+        id: 'usr-student-01',
+        name: 'Rahul Sharma',
+        email: 'rahul.student@gmail.com',
+        role: 'student',
+        targetExam: 'WBPSC Miscellaneous 2026',
+        avatar: 'RS'
+      };
+      localStorage.setItem('amar_pathshala_active_session', JSON.stringify(defaultUser));
+      return defaultUser;
     } catch (e) {
       return null;
     }
