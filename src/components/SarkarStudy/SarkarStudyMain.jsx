@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ExamDetailHub from '../ExamPage/ExamDetailHub';
 import TypewriterSearchBar from './TypewriterSearchBar';
 import FloatingBotWidget from '../Bot/FloatingBotWidget';
