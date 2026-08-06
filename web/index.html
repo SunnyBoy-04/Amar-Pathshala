@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Text Chat App (Public Download & Live Web)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0B0C10;
+      --surface-color: rgba(20, 24, 36, 0.85);
+      --card-color: #1D2436;
+      --text-primary: #DFE6E9;
+      --text-secondary: #B2BEC3;
+      --received-bubble: #222B3E;
+      --received-text: #DFE6E9;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(20, 24, 36, 0.92);
+      --input-text: #DFE6E9;
+    }
+
+    body.light-theme {
+      --bg-color: #F5F6FA;
+      --surface-color: rgba(255, 255, 255, 0.9);
+      --card-color: #EAEAEE;
+      --text-primary: #2D3436;
+      --text-secondary: #636E72;
+      --received-bubble: #E1E8ED;
+      --received-text: #2D3436;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --input-text: #2D3436;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .top-banner {
+      position: absolute;
+      top: 10px;
+      z-index: 100;
+      background: rgba(108, 92, 231, 0.2);
+      border: 1px solid rgba(108, 92, 231, 0.4);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      color: #00CEC9;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .apk-download-btn {
+      background: linear-gradient(135deg, #00CEC9, #6C5CE7);
+      color: #FFF;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 11.5px;
+      box-shadow: 0 2px 8px rgba(0, 206, 201, 0.4);
+    }
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      height: 90vh;
+      max-height: 840px;
+      position: relative;
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      transition: background 0.3s ease;
+    }
+    canvas#bgCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .header {
+      position: relative;
+      z-index: 10;
+      padding: 14px 20px;
+      background: var(--surface-color);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s ease;
+    }
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #00CEC9;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00CEC9;
+    }
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(108, 92, 231, 0.15);
+      color: #6C5CE7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.2s ease;
+    }
+    .icon-btn:hover {
+      transform: scale(1.08);
+    }
+    .room-badge {
+      background: rgba(0, 206, 201, 0.15);
+      color: #00CEC9;
+      border: 1px solid rgba(0, 206, 201, 0.3);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .messages-container {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+    .messages-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    .messages-container::-webkit-scrollbar-thumb {
+      background: rgba(100, 100, 100, 0.2);
+      border-radius: 4px;
+    }
+    .chat-bubble-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: fadeInSlide 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+    .chat-bubble-wrapper.sent {
+      justify-content: flex-end;
+    }
+    .chat-bubble-wrapper.received {
+      justify-content: flex-start;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .avatar.sent {
+      background: rgba(108, 92, 231, 0.3);
+      color: #FFF;
+      border: 1px solid rgba(108, 92, 231, 0.5);
+    }
+    .avatar.received {
+      background: rgba(0, 206, 201, 0.2);
+      color: #00CEC9;
+      border: 1px solid rgba(0, 206, 201, 0.4);
+    }
+    .bubble {
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      word-wrap: break-word;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .bubble.sent {
+      background: linear-gradient(135deg, #5841D8, #6C5CE7);
+      border-bottom-right-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #FFF;
+    }
+    .bubble.received {
+      background: var(--received-bubble);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border-color);
+      color: var(--received-text);
+    }
+    .sender-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #00CEC9;
+      margin-bottom: 4px;
+    }
+    body.light-theme .sender-name {
+      color: #5841D8;
+    }
+    .message-text {
+      font-size: 14.5px;
+      line-height: 1.4;
+    }
+    .bubble-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+    .bubble.sent .bubble-meta {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .input-container {
+      position: relative;
+      z-index: 10;
+      padding: 12px 16px;
+      background: transparent;
+    }
+    .input-glass-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--input-bg);
+      border: 1.2px solid var(--border-color);
+      border-radius: 30px;
+      padding: 6px 8px 6px 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transition: all 0.2s ease;
+    }
+    .input-glass-box:focus-within {
+      border-color: rgba(108, 92, 231, 0.6);
+      box-shadow: 0 10px 25px rgba(108, 92, 231, 0.2);
+    }
+    .chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--input-text);
+      font-size: 14.5px;
+    }
+    .chat-input::placeholder {
+      color: var(--text-secondary);
+    }
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      background: linear-gradient(135deg, #6C5CE7, #00CEC9);
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+      transition: transform 0.15s ease;
+    }
+    .send-btn:active {
+      transform: scale(0.92);
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-banner">
+    <span>🌐 <b>App Hosted Online</b></span>
+    <a href="app-release.apk" class="apk-download-btn" id="downloadApkBtn" download="ChattingApp-Release.apk">📱 Download Android APK</a>
+  </div>
+
+  <div class="app-container">
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-info">
+        <div class="status-dot"></div>
+        <div>
+          <div class="header-title">Real-Time Text Chat</div>
+          <div class="header-subtitle" id="userHandle" title="Click to edit name">Name: <span id="nameVal">Loading...</span> ✏️</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="shareBtn" title="Share App Link">🔗</button>
+        <button class="icon-btn" id="themeToggleBtn" title="Toggle Theme">🌙</button>
+        <div class="room-badge">Global Room</div>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer"></div>
+
+    <!-- Input Area -->
+    <div class="input-container">
+      <div class="input-glass-box">
+        <input type="text" class="chat-input" id="messageInput" placeholder="Type a text message..." autocomplete="off">
+        <button class="send-btn" id="sendBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isDarkMode = true;
+
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      drawBackground();
+    }
+
+    function drawBackground() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const grad1 = ctx.createRadialGradient(w * 0.85, h * 0.15, 10, w * 0.85, h * 0.15, w * 0.65);
+      if (isDarkMode) {
+        grad1.addColorStop(0, 'rgba(108, 92, 231, 0.22)');
+        grad1.addColorStop(0.5, 'rgba(108, 92, 231, 0.05)');
+      } else {
+        grad1.addColorStop(0, 'rgba(108, 92, 231, 0.12)');
+        grad1.addColorStop(0.5, 'rgba(108, 92, 231, 0.03)');
+      }
+      grad1.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad1;
+      ctx.beginPath();
+      ctx.arc(w * 0.85, h * 0.15, w * 0.65, 0, Math.PI * 2);
+      ctx.fill();
+
+      const grad2 = ctx.createRadialGradient(w * 0.15, h * 0.65, 10, w * 0.15, h * 0.65, w * 0.55);
+      if (isDarkMode) {
+        grad2.addColorStop(0, 'rgba(0, 206, 201, 0.15)');
+        grad2.addColorStop(0.5, 'rgba(0, 206, 201, 0.03)');
+      } else {
+        grad2.addColorStop(0, 'rgba(0, 206, 201, 0.12)');
+        grad2.addColorStop(0.5, 'rgba(0, 206, 201, 0.02)');
+      }
+      grad2.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad2;
+      ctx.beginPath();
+      ctx.arc(w * 0.15, h * 0.65, w * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)';
+      ctx.lineWidth = 1.2;
+
+      [90, 170, 260].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(w * 0.85, h * 0.15, r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      [120, 220].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(w * 0.1, h * 0.8, r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const themeBtn = document.getElementById('themeToggleBtn');
+    themeBtn.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('light-theme', !isDarkMode);
+      themeBtn.innerText = isDarkMode ? '🌙' : '☀️';
+      drawBackground();
+    });
+
+    const shareBtn = document.getElementById('shareBtn');
+    shareBtn.addEventListener('click', () => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+        alert('🔗 App Link copied to clipboard!\nShare it with any friend to connect instantly.');
+      } else {
+        alert('Share this link: ' + window.location.href);
+      }
+    });
+
+    const myId = 'usr_' + Math.random().toString(36).substr(2, 6);
+    let myName = 'User_' + myId.substr(4).toUpperCase();
+    document.getElementById('nameVal').innerText = myName;
+
+    document.getElementById('userHandle').addEventListener('click', () => {
+      const inputName = prompt('Enter your name:', myName);
+      if (inputName && inputName.trim()) {
+        myName = inputName.trim();
+        document.getElementById('nameVal').innerText = myName;
+      }
+    });
+
+    const channel = new BroadcastChannel('chat_app_realtime_channel');
+
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const container = document.getElementById('messagesContainer');
+
+    function scrollToBottom() {
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendMessage(msgData) {
+      const isMe = msgData.senderId === myId;
+      const initial = msgData.senderName.charAt(0).toUpperCase();
+
+      const html = isMe ? `
+        <div class="chat-bubble-wrapper sent">
+          <div class="bubble sent">
+            <div class="message-text">${escapeHTML(msgData.text)}</div>
+            <div class="bubble-meta">${msgData.time} ✓✓</div>
+          </div>
+          <div class="avatar sent">ME</div>
+        </div>
+      ` : `
+        <div class="chat-bubble-wrapper received">
+          <div class="avatar received">${initial}</div>
+          <div class="bubble received">
+            <div class="sender-name">${escapeHTML(msgData.senderName)}</div>
+            <div class="message-text">${escapeHTML(msgData.text)}</div>
+            <div class="bubble-meta">${msgData.time}</div>
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', html);
+      scrollToBottom();
+    }
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      const msgData = {
+        senderId: myId,
+        senderName: myName,
+        text: text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      appendMessage(msgData);
+      input.value = '';
+
+      channel.postMessage(msgData);
+    }
+
+    channel.onmessage = (event) => {
+      appendMessage(event.data);
+    };
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    appendMessage({
+      senderId: 'system',
+      senderName: 'System',
+      text: 'Deploy ready! Tap "📱 Download Android APK" or tap 🔗 to share link with friends.',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+  </script>
+</body>
+</html>

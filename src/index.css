@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans;
+  }
+
+  /* Ensure all inputs and textareas natively support multi-language Unicode IME input (Bengali, Hindi, English) */
+  input, textarea, select {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Inter', system-ui, -apple-system, sans-serif !important;
+  }
+}
+
+/* Modern Universal Scrollbar Design System */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 #090e17;
+}
+
+/* WebKit Browsers (Chrome, Edge, Safari, Brave) */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2563eb 0%, #3b82f6 100%);
+  border-radius: 9999px;
+  border: 1.5px solid rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+/* Palette status button styling */
+.palette-btn {
+  @apply w-9 h-9 sm:w-10 sm:h-10 text-xs font-semibold rounded-md flex items-center justify-center transition-all duration-150 relative shadow-sm cursor-pointer select-none;
+}
+
+.palette-answered {
+  @apply bg-emerald-600 text-white hover:bg-emerald-700 border border-emerald-700;
+}
+
+.palette-unanswered {
+  @apply bg-red-500 text-white hover:bg-red-600 border border-red-600;
+}
+
+.palette-marked {
+  @apply bg-purple-600 text-white hover:bg-purple-700 border border-purple-700;
+}
+
+.palette-marked-answered {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-700;
+}
+
+.palette-not-visited {
+  @apply bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300;
+}
+
+.palette-active {
+  @apply ring-2 ring-navy-800 ring-offset-2 scale-105 z-10;
+}
+
+/* Smooth Floating Card Animation */
+@keyframes float-glow {
+  0%, 100% {
+    transform: translateY(0px);
+    box-shadow: 0 20px 35px -10px rgba(59, 130, 246, 0.25);
+  }
+  50% {
+    transform: translateY(-12px);
+    box-shadow: 0 35px 55px -15px rgba(59, 130, 246, 0.45);
+  }
+}
+
+.animate-float {
+  animation: float-glow 3.5s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
